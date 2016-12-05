@@ -11,7 +11,7 @@ public class HammingDistance {
 		return  counter;
 	}
 	
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
     	HammingDistance algo = new HammingDistance();
     	System.out.println(algo.distance("Distributed Systems", "Disturbed Systems"));
     	System.out.println(algo.distance("Distributed Systems", "Distressed Sausages"));
@@ -19,5 +19,5 @@ public class HammingDistance {
     	System.out.println(algo.distance("Distributed Systems", "Distended Cisterns"));
     	System.out.println(algo.distance("Distributed Systems", "Distempered Sisyphus"));
     	System.out.println(algo.distance("Distributed Systems", "Distilled Cistercians"));
-	}	
+	}*/	
 }
