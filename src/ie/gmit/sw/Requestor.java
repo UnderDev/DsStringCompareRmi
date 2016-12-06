@@ -10,10 +10,10 @@ public class Requestor {
 		super();
 	}
 
-	public Requestor(String algorithm, String s1, String t1, String taskNumber) {
+	public Requestor(String s1, String t1, String algorithm, String taskNumber) {
 		this.algo = algorithm;
 		this.s = s1;
-		this.t= t1;
+		this.t = t1;
 		this.taskNum = taskNumber;
 
 	}

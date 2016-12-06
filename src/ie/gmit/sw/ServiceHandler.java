@@ -10,11 +10,13 @@ import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
+import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
+
 public class ServiceHandler extends HttpServlet {
 	private String remoteHost = null;
 	private volatile static long jobNumber = 0;
 	private LinkedList<Requestor> inQueue;
-	private Map outQueue;
+	private Map<String, Resultator> outQueue;
 
 	public void init() throws ServletException {
 		ServletContext ctx = getServletContext();
@@ -22,60 +24,76 @@ public class ServiceHandler extends HttpServlet {
 		// Reads the value from the <context-param> in web.xml
 
 		inQueue = new LinkedList<Requestor>();
-		outQueue = new HashMap();
+		outQueue = new HashMap<String, Resultator>();
 	}
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/html");
 		PrintWriter out = resp.getWriter();
 
-		// Initialise some request varuables with the submitted form info. These
+		// Initialize some request variables with the submitted form info. These
 		// are local to this method and thread safe...
 		String algorithm = req.getParameter("cmbAlgorithm");
 		String s = req.getParameter("txtS");
 		String t = req.getParameter("txtT");
 		String taskNumber = req.getParameter("frmTaskNumber");
-		
-		//--------------------------------------------- MAKE METHOD FROM BELOW RMI CLIENT------------------------------------------	
-		//Ask the registry running on 10.2.2.65 and listening in port 1099 for the instannce of
-		//the StringService object that is bound to the RMI registry with the name howdayService.
+
 		StringService ss = null;
 		try {
 			ss = (StringService) Naming.lookup("rmi://localhost:1099/howdayService");
-			//Make the remote method invocation. This results in the RemoteMessage object being transferred
-			//to us over the network in serialized form. 
-			
+			// Make the remote method invocation. This results in the
+			// RemoteMessage object being transferred
+			// to us over the network in serialized form.
+
 		} catch (NotBoundException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		//--------------------------------------------- END METHOD RMI CLIENT---------------------------------------------------------
-		
-		
+
 		out.print("<html><head><title>Distributed Systems Assignment</title>");
 		out.print("</head>");
 		out.print("<body>");
 
+		Resultator result = null;
+
+		// Check to see if its a new job, if so add it to the list
 		if (taskNumber == null) {
 			taskNumber = new String("T" + jobNumber);
-			//Resultator r = ss.
-			Resultator result = ss.compare(s, t, algorithm);
-			//Requestor request = new Requestor(algorithm, s, t, taskNumber);
 			// Add job to in-queue
-			System.out.println(result.getResult());
+			Requestor request = new Requestor(s, t, algorithm, taskNumber);
 			// Add the Request to a LinkedList
-			//inQueue.add(request);
+			inQueue.add(request);
+
+			// Treaded POLL from Queue while its not empty
+			while (!inQueue.isEmpty()) {
+				// Take the current job and fire it off to the RMI Method
+				// .compare
+				request = inQueue.poll();
+
+				result = ss.compare(request.getS(), request.getT(), request.getAlgo());
+				outQueue.put(taskNumber, result);
+				System.out.println("Distance: " + result.getResult());
+			}
 
 			jobNumber++;
 		} else {
 			// Check out-queue for finished job
-			
+
 			// Get the Value associated with job number
-			Object outItem = outQueue.get(jobNumber);
-			 //Remove the item in the map by jobNumber
-			outQueue.remove(jobNumber);
+
+			if (outQueue.containsKey(taskNumber)) {
+				Resultator outItem = outQueue.get(taskNumber);
+				System.out.println("Job Processed No:" + taskNumber);
+				if (outItem.isProcessed() == true) {
+					outQueue.remove(taskNumber);
+					/*				NEXT STEP 
+					*send completed task back to the client 
+					*/
+					System.out.println("Removed Task");
+				}
+			}
+			// Remove the item in the map by jobNumber
+
 		}
-		
 
 		out.print("<H1>Processing request for Job#: " + taskNumber + "</H1>");
 		out.print("<div id=\"r\"></div>");
@@ -122,16 +140,9 @@ public class ServiceHandler extends HttpServlet {
 		out.print("var wait=setTimeout(\"document.frmRequestDetails.submit();\", 10000);");
 		out.print("</script>");
 
-		// You can use this method to implement the functionality of an RMI client
-		
-		
-		
-		try {
-			findJob(inQueue);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		}//Gets the head of the queue *Thread This*
+		// You can use this method to implement the functionality of an RMI
+		// client
+
 	}
 
 	public Requestor findJob(LinkedList<Requestor> inQ) {
