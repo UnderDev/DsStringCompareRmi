@@ -15,16 +15,17 @@ public class ResultatorImpl extends UnicastRemoteObject implements Resultator {
 		//this.message = new Message(message);
 	}	
 
-	public Resultator compare(String s, String t, Algorithm algo) throws RemoteException {
+	public ResultatorImpl(String s, String t) throws RemoteException {
 		this.s1 = s;
 		this.t1 = t;
-		this.algor = algo;
-		return null;
+	
+
 	}
+
 
 	public String getResult() throws RemoteException {
 		// TODO Auto-generated method stub
-		return null;
+		return "gthgjh";
 	}
 
 	public void setResult(String result) throws RemoteException {

@@ -35,18 +35,36 @@ public class ServiceHandler extends HttpServlet {
 		String s = req.getParameter("txtS");
 		String t = req.getParameter("txtT");
 		String taskNumber = req.getParameter("frmTaskNumber");
-
+		
+		//--------------------------------------------- MAKE METHOD FROM BELOW RMI CLIENT------------------------------------------	
+		//Ask the registry running on 10.2.2.65 and listening in port 1099 for the instannce of
+		//the StringService object that is bound to the RMI registry with the name howdayService.
+		StringService ss = null;
+		try {
+			ss = (StringService) Naming.lookup("rmi://localhost:1099/howdayService");
+			//Make the remote method invocation. This results in the RemoteMessage object being transferred
+			//to us over the network in serialized form. 
+			
+		} catch (NotBoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		//--------------------------------------------- END METHOD RMI CLIENT---------------------------------------------------------
+		
+		
 		out.print("<html><head><title>Distributed Systems Assignment</title>");
 		out.print("</head>");
 		out.print("<body>");
 
 		if (taskNumber == null) {
 			taskNumber = new String("T" + jobNumber);
-			Requestor request = new Requestor(algorithm, s, t, taskNumber);
+			//Resultator r = ss.
+			Resultator result = ss.compare(s, t, algorithm);
+			//Requestor request = new Requestor(algorithm, s, t, taskNumber);
 			// Add job to in-queue
-			
+			System.out.println(result.getResult());
 			// Add the Request to a LinkedList
-			inQueue.add(request);
+			//inQueue.add(request);
 
 			jobNumber++;
 		} else {
@@ -107,26 +125,6 @@ public class ServiceHandler extends HttpServlet {
 		// You can use this method to implement the functionality of an RMI client
 		
 		
-		//--------------------------------------------- MAKE METHOD FROM BELOW RMI CLIENT------------------------------------------	
-		//Ask the registry running on 10.2.2.65 and listening in port 1099 for the instannce of
-		//the StringService object that is bound to the RMI registry with the name howdayService.
-		StringService ss;
-		try {
-			ss = (StringService) Naming.lookup("rmi://localhost:1099/howdayService");
-			//Make the remote method invocation. This results in the RemoteMessage object being transferred
-			//to us over the network in serialized form. 
-			Resultator result = ss.compare(s, t, algorithm);
-			
-			System.out.println("RemoteMessage Object ID: " + result);
-			
-		} catch (NotBoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		//--------------------------------------------- END METHOD RMI CLIENT---------------------------------------------------------
-		
-		
-		
 		
 		try {
 			findJob(inQueue);
@@ -135,9 +133,9 @@ public class ServiceHandler extends HttpServlet {
 			//e.printStackTrace();
 		}//Gets the head of the queue *Thread This*
 	}
-	
-	public Requestor findJob(LinkedList<Requestor> inQ){
-		return inQ.poll();	
+
+	public Requestor findJob(LinkedList<Requestor> inQ) {
+		return inQ.poll();
 	}
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
