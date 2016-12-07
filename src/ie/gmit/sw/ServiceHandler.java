@@ -17,12 +17,9 @@ public class ServiceHandler extends HttpServlet {
 	private volatile static long jobNumber = 0;
 	private LinkedList<Requestor> inQueue;
 	private Map<String, Resultator> outQueue;
-	private List<String> keys = new ArrayList<String>();
-	private ExecutorService executor = Executors.newFixedThreadPool(5);// creating
-																		// a
-																		// pool
-																		// of 5
-																		// threads
+	private volatile static ExecutorService executor;
+	private String distance;
+	private final int THREAD_POOL_SIZE = 3;
 
 	public void init() throws ServletException {
 		ServletContext ctx = getServletContext();
@@ -31,14 +28,15 @@ public class ServiceHandler extends HttpServlet {
 
 		inQueue = new LinkedList<Requestor>();
 		outQueue = new HashMap<String, Resultator>();
+		executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 	}
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/html");
 		PrintWriter out = resp.getWriter();
 
-		// Initialize some request variables with the submitted form info. These
-		// are local to this method and thread safe...
+		// Initialize some request variables with the submitted form info. 
+		// These are local to this method and thread safe...
 		String algorithm = req.getParameter("cmbAlgorithm");
 		String s = req.getParameter("txtS");
 		String t = req.getParameter("txtT");
@@ -59,68 +57,48 @@ public class ServiceHandler extends HttpServlet {
 		out.print("</head>");
 		out.print("<body>");
 
-		// Resultator result = null;
-		
-		// Check to see if its a new job, if so add it to the list
+		// Check to see if its a new Task
 		if (taskNumber == null) {
+			taskNumber = new String("T" + jobNumber);
 
-			for (int i = 0; i < 5; i++) {
+			// Create a new Request OBJECT
+			Requestor request = new Requestor(s, t, algorithm, taskNumber);
 
-				taskNumber = new String("T" + jobNumber);
-				// Add job to in-queue
+			// Add Task to in-queue
+			inQueue.add(request);
 
-				// Create a new Request OBJECT
-				Requestor request = new Requestor(s, t, algorithm, taskNumber);
-				// Pass the Request Obj to a Worker Class
-				Runnable worker = new ServiceHandlerWorker(request, inQueue, outQueue, ss);
+			// Pass the Request Obj to a Worker Class (Thread)
+			Runnable worker = new ServiceHandlerWorker(inQueue, outQueue, ss);
 
-				// Execute the Worker(fixed pool size) calling execute method of
-				// ExecutorService
-				executor.execute(worker);
-				// Shut down the Executor
-				// executor.shutdown();
+			// Execute the Worker(fixed_pool_size)
+			executor.execute(worker);
 
-				// Add the Request to a LinkedList
-				inQueue.add(request);
-
-				keys.add(taskNumber);
-				// Treaded POLL from Queue while its not empty
-				// while (!inQueue.isEmpty()) {
-				// Take the current job and fire it off to the RMI Method
-				// .compare
-				// request = inQueue.poll();
-
-				// result = ss.compare(request.getS(), request.getT(),
-				// request.getAlgo());
-				// outQueue.put(taskNumber, result);
-				// System.out.println("Distance: " + result.getResult());
-				// }
-
-				jobNumber++;
-			}
+			// Shut down the Executor (not used) maby on finalize ? 
+			// executor.shutdown();
+			
+			//Increment jobNumber
+			jobNumber++;
 		} else {
-			// Check out-queue for finished job
+			// ELSE - Check outQueue for finished job
 
-			// Get the Value associated with job number
-			for (String chkKey : keys) {
+			// Get the Value associated with the current job number
+			if (outQueue.containsKey(taskNumber)) {
+				//Get the Resultator item from the MAP by current taskNumber
+				Resultator outQItem = outQueue.get(taskNumber);
 
-				if (outQueue.containsKey(chkKey)) {
-					Resultator outQItem = outQueue.get(chkKey);
+				System.out.println("Checking Status of Task No:" + taskNumber);
 
-					System.out.println("Checking Status of Task, No:" + chkKey);
-
-					// Check to see if the Resultator Item is processed
-					if (outQItem.isProcessed() == true) {
-						// remove the processed item from Map
-						outQueue.remove(chkKey);
-						/*
-						 * NEXT STEP send completed task back to the client
-						 */
-						System.out
-								.println("\nTask " + chkKey + " Successfully Processed and Removed from OutQueue");
-						System.out.println(
-								"Distance Between String(" + s + ") and String(" + t + ") = " + outQItem.getResult());
-					}
+				// Check to see if the Resultator Item is Processed
+				if (outQItem.isProcessed() == true) {
+					// Remove the processed item from Map by taskNumber
+					outQueue.remove(taskNumber);
+					/*
+					 * NEXT STEP send completed task back to the client
+					 */
+					distance = outQItem.getResult();
+					
+					System.out.println("\nTask " + taskNumber + " Successfully Processed and Removed from OutQueue");
+					System.out.println("Distance Between String(" + s + ") and String(" + t + ") = " + distance);
 				}
 			}
 		}
@@ -133,6 +111,9 @@ public class ServiceHandler extends HttpServlet {
 		out.print("<br>Algorithm: " + algorithm);
 		out.print("<br>String <i>s</i> : " + s);
 		out.print("<br>String <i>t</i> : " + t);
+
+		out.print("<br>Distance Between String (" + s + ") and String (" + t + ") = " + distance + "<br>");
+
 		out.print(
 				"<br>This servlet should only be responsible for handling client request and returning responses. Everything else should be handled by different objects.");
 		out.print(
@@ -169,10 +150,6 @@ public class ServiceHandler extends HttpServlet {
 		out.print("<script>");
 		out.print("var wait=setTimeout(\"document.frmRequestDetails.submit();\", 10000);");
 		out.print("</script>");
-
-		// You can use this method to implement the functionality of an RMI
-		// client
-
 	}
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

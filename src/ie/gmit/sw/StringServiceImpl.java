@@ -3,6 +3,8 @@ package ie.gmit.sw;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+ /* Server side class
+ */
 public class StringServiceImpl extends UnicastRemoteObject implements StringService {
 	private static final long serialVersionUID = 1L;
 
@@ -62,13 +64,12 @@ public class StringServiceImpl extends UnicastRemoteObject implements StringServ
 
 		/* Create a new thread with a new instance of StringServiceWorker that passes in a reference to the ResultatorImpl, 
 		 * the two strings and the algorithm chosen.
-		 * Thread sleeps to simulate real asynchronous service.
+		 * Thread sleeps for 1 sec to simulate real asynchronous service.
 		 */
 		Thread thread = new Thread(new StringServiceWorker(r, s, t, algorithm));
 		thread.start();
 
-		/*Return the instance of Resultator back to the client(Updates when worker thread finishes)
-		 */
+		//Return the instance of Resultator back to the client(Updates when worker thread finishes)
 		return r;
 	}
 

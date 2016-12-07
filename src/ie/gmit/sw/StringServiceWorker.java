@@ -1,5 +1,7 @@
 package ie.gmit.sw;
 
+/*Server Side Class 
+ */
 public class StringServiceWorker implements Runnable {
 
 	private String s1;
@@ -22,12 +24,14 @@ public class StringServiceWorker implements Runnable {
 	 */
 	public void run() {
 		try {
+			//Sets the distance in Resultator.setResult()
 			rs.setResult(Integer.toString(algor.distance(s1, t1)));
 			try {
-				Thread.sleep(20000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			//Used to change the boolean of is processed to true
 			rs.setProcessed();
 		} catch (Exception e) {
 			e.printStackTrace();
