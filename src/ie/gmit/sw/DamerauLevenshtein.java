@@ -1,6 +1,6 @@
 package ie.gmit.sw;
 
-public class DamerauLevenshtein {
+public class DamerauLevenshtein implements Algorithm{
     public int distance(String s, String t) {
         int[][] distance = new int[s.length() + 1][t.length() + 1];
         for (int i = 0; i <= s.length(); i++) distance[i][0] = i;
@@ -19,7 +19,7 @@ public class DamerauLevenshtein {
         return distance[s.length()][t.length()];
     }
     
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
     	DamerauLevenshtein algo = new DamerauLevenshtein();
     	System.out.println(algo.distance("Distributed Systems", "Disturbed Systems"));
     	System.out.println(algo.distance("Distributed Systems", "Distressed Sausages"));
@@ -27,5 +27,5 @@ public class DamerauLevenshtein {
     	System.out.println(algo.distance("Distributed Systems", "Distended Cisterns"));
     	System.out.println(algo.distance("Distributed Systems", "Distempered Sisyphus"));
     	System.out.println(algo.distance("Distributed Systems", "Distilled Cistercians"));
-	}
+	}*/
 }
