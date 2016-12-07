@@ -64,13 +64,8 @@ public class StringServiceImpl extends UnicastRemoteObject implements StringServ
 		 * the two strings and the algorithm chosen.
 		 * Thread sleeps to simulate real asynchronous service.
 		 */
-		r.setResult(Integer.toString(algorithm.distance(s, t)));
-		/*try {
-			Thread.sleep(20000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}*/
-		r.setProcessed();
+		Thread thread = new Thread(new StringServiceWorker(r, s, t, algorithm));
+		thread.start();
 
 		/*Return the instance of Resultator back to the client(Updates when worker thread finishes)
 		 */

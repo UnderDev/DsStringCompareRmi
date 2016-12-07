@@ -23,11 +23,11 @@ public class StringServiceWorker implements Runnable {
 	public void run() {
 		try {
 			rs.setResult(Integer.toString(algor.distance(s1, t1)));
-			/*try {
+			try {
 				Thread.sleep(20000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}*/
+			}
 			rs.setProcessed();
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -17,6 +17,7 @@ public class ServiceHandler extends HttpServlet {
 	private volatile static long jobNumber = 0;
 	private LinkedList<Requestor> inQueue;
 	private Map<String, Resultator> outQueue;
+	private List<String> keys = new ArrayList<String>();
 	private ExecutorService executor = Executors.newFixedThreadPool(5);// creating
 																		// a
 																		// pool
@@ -58,57 +59,68 @@ public class ServiceHandler extends HttpServlet {
 		out.print("</head>");
 		out.print("<body>");
 
-		//Resultator result = null;
-
+		// Resultator result = null;
+		
 		// Check to see if its a new job, if so add it to the list
 		if (taskNumber == null) {
-			taskNumber = new String("T" + jobNumber);
-			// Add job to in-queue
 
-			//Create a new Request OBJECT
-			Requestor request = new Requestor(s, t, algorithm, taskNumber);
-			//Pass the Request Obj to a Worker Class
-			Runnable worker = new ServiceHandlerWorker(request,inQueue,outQueue,ss);
-			
-			//Execute the Worker(fixed pool size) calling execute method of ExecutorService
-			executor.execute(worker);
-			//Shut down the Executor
-			//executor.shutdown();
+			for (int i = 0; i < 5; i++) {
 
-			// Add the Request to a LinkedList
-			inQueue.add(request);
+				taskNumber = new String("T" + jobNumber);
+				// Add job to in-queue
 
-			// Treaded POLL from Queue while its not empty
-			//while (!inQueue.isEmpty()) {
+				// Create a new Request OBJECT
+				Requestor request = new Requestor(s, t, algorithm, taskNumber);
+				// Pass the Request Obj to a Worker Class
+				Runnable worker = new ServiceHandlerWorker(request, inQueue, outQueue, ss);
+
+				// Execute the Worker(fixed pool size) calling execute method of
+				// ExecutorService
+				executor.execute(worker);
+				// Shut down the Executor
+				// executor.shutdown();
+
+				// Add the Request to a LinkedList
+				inQueue.add(request);
+
+				keys.add(taskNumber);
+				// Treaded POLL from Queue while its not empty
+				// while (!inQueue.isEmpty()) {
 				// Take the current job and fire it off to the RMI Method
 				// .compare
-				//request = inQueue.poll();
+				// request = inQueue.poll();
 
-				//result = ss.compare(request.getS(), request.getT(), request.getAlgo());
-				//outQueue.put(taskNumber, result);
+				// result = ss.compare(request.getS(), request.getT(),
+				// request.getAlgo());
+				// outQueue.put(taskNumber, result);
 				// System.out.println("Distance: " + result.getResult());
-			//}
+				// }
 
-			jobNumber++;
+				jobNumber++;
+			}
 		} else {
 			// Check out-queue for finished job
 
 			// Get the Value associated with job number
-			if (outQueue.containsKey(taskNumber)) {
-				Resultator outQItem = outQueue.get(taskNumber);
+			for (String chkKey : keys) {
 
-				System.out.println("Checking Status of Task, No:" + taskNumber);
+				if (outQueue.containsKey(chkKey)) {
+					Resultator outQItem = outQueue.get(chkKey);
 
-				// Check to see if the Resultator Item is processed
-				if (outQItem.isProcessed() == true) {
-					// remove the processed item from Map
-					outQueue.remove(taskNumber);
-					/*
-					 * NEXT STEP send completed task back to the client
-					 */
-					System.out.println("\nTask " + taskNumber + " Successfully Processed and Removed from OutQueue");
-					System.out.println(
-							"Distance Between String(" + s + ") and String(" + t + ") = " + outQItem.getResult());
+					System.out.println("Checking Status of Task, No:" + chkKey);
+
+					// Check to see if the Resultator Item is processed
+					if (outQItem.isProcessed() == true) {
+						// remove the processed item from Map
+						outQueue.remove(chkKey);
+						/*
+						 * NEXT STEP send completed task back to the client
+						 */
+						System.out
+								.println("\nTask " + chkKey + " Successfully Processed and Removed from OutQueue");
+						System.out.println(
+								"Distance Between String(" + s + ") and String(" + t + ") = " + outQItem.getResult());
+					}
 				}
 			}
 		}
