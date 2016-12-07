@@ -11,54 +11,69 @@ public class StringServiceImpl extends UnicastRemoteObject implements StringServ
 	}
 
 	public Resultator compare(String s, String t, String algo) throws RemoteException {
-		Algorithm algorithim = null;
+		//Create an instance of Algorithm
+		Algorithm algorithm = null;
+		
+		//Switch on the algorithm passed in from RMI, and create a new instance of that algorithm (Fix + Make prettier)
 		switch (algo) {
 		case "Damerau-Levenshtein Distance":
-			algorithim = new DamerauLevenshtein();
+			algorithm = new DamerauLevenshtein();
 			break;
 
 		case "Euclidean Distance":
-			algorithim = new Levenshtein();
+			algorithm = new Levenshtein();
 			break;
 
 		case "Levenshtein":
-			algorithim = new Levenshtein();
+			algorithm = new Levenshtein();
 			break;
 
 		case "Hamming Distance":
-			algorithim = new HammingDistance();
+			algorithm = new HammingDistance();
 			break;
 
 		case "Hirschberg's Algorithm":
-			algorithim = new Levenshtein();
+			algorithm = new Levenshtein();
 			break;
 
 		case "JaroâWinkler Distance":
-			algorithim = new Levenshtein();
+			algorithm = new Levenshtein();
 			break;
 
 		case "Levenshtein Distance":
-			algorithim = new Levenshtein();
+			algorithm = new Levenshtein();
 			break;
 
 		case "Needleman-Wunsch":
-			algorithim = new Levenshtein();
+			algorithm = new Levenshtein();
 			break;
 
 		case "Smith Waterman":
-			algorithim = new Levenshtein();
+			algorithm = new Levenshtein();
 			break;
 
 		default:
-			algorithim = new Levenshtein();
+			algorithm = new Levenshtein();
 			break;
 		}
 
+		//Create a new instance of ResultatorImpl()
 		Resultator r = new ResultatorImpl();
 
-		Thread thread = new Thread(new StringServiceWorker(r, s, t, algorithim));
-		thread.start();
+		/* Create a new thread with a new instance of StringServiceWorker that passes in a reference to the ResultatorImpl, 
+		 * the two strings and the algorithm chosen.
+		 * Thread sleeps to simulate real asynchronous service.
+		 */
+		r.setResult(Integer.toString(algorithm.distance(s, t)));
+		/*try {
+			Thread.sleep(20000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}*/
+		r.setProcessed();
 
+		/*Return the instance of Resultator back to the client(Updates when worker thread finishes)
+		 */
 		return r;
 	}
 

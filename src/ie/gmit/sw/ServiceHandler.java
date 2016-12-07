@@ -1,22 +1,27 @@
 package ie.gmit.sw;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.util.*;
+import java.util.concurrent.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
-
 public class ServiceHandler extends HttpServlet {
+
+	private static final long serialVersionUID = 1L;
+
 	private String remoteHost = null;
 	private volatile static long jobNumber = 0;
 	private LinkedList<Requestor> inQueue;
 	private Map<String, Resultator> outQueue;
+	private ExecutorService executor = Executors.newFixedThreadPool(5);// creating
+																		// a
+																		// pool
+																		// of 5
+																		// threads
 
 	public void init() throws ServletException {
 		ServletContext ctx = getServletContext();
@@ -53,46 +58,59 @@ public class ServiceHandler extends HttpServlet {
 		out.print("</head>");
 		out.print("<body>");
 
-		Resultator result = null;
+		//Resultator result = null;
 
 		// Check to see if its a new job, if so add it to the list
 		if (taskNumber == null) {
 			taskNumber = new String("T" + jobNumber);
 			// Add job to in-queue
+
+			//Create a new Request OBJECT
 			Requestor request = new Requestor(s, t, algorithm, taskNumber);
+			//Pass the Request Obj to a Worker Class
+			Runnable worker = new ServiceHandlerWorker(request,inQueue,outQueue,ss);
+			
+			//Execute the Worker(fixed pool size) calling execute method of ExecutorService
+			executor.execute(worker);
+			//Shut down the Executor
+			//executor.shutdown();
+
 			// Add the Request to a LinkedList
 			inQueue.add(request);
 
 			// Treaded POLL from Queue while its not empty
-			while (!inQueue.isEmpty()) {
+			//while (!inQueue.isEmpty()) {
 				// Take the current job and fire it off to the RMI Method
 				// .compare
-				request = inQueue.poll();
+				//request = inQueue.poll();
 
-				result = ss.compare(request.getS(), request.getT(), request.getAlgo());
-				outQueue.put(taskNumber, result);
-				System.out.println("Distance: " + result.getResult());
-			}
+				//result = ss.compare(request.getS(), request.getT(), request.getAlgo());
+				//outQueue.put(taskNumber, result);
+				// System.out.println("Distance: " + result.getResult());
+			//}
 
 			jobNumber++;
 		} else {
 			// Check out-queue for finished job
 
 			// Get the Value associated with job number
-
 			if (outQueue.containsKey(taskNumber)) {
-				Resultator outItem = outQueue.get(taskNumber);
-				System.out.println("Job Processed No:" + taskNumber);
-				if (outItem.isProcessed() == true) {
+				Resultator outQItem = outQueue.get(taskNumber);
+
+				System.out.println("Checking Status of Task, No:" + taskNumber);
+
+				// Check to see if the Resultator Item is processed
+				if (outQItem.isProcessed() == true) {
+					// remove the processed item from Map
 					outQueue.remove(taskNumber);
-					/*				NEXT STEP 
-					*send completed task back to the client 
-					*/
-					System.out.println("Removed Task");
+					/*
+					 * NEXT STEP send completed task back to the client
+					 */
+					System.out.println("\nTask " + taskNumber + " Successfully Processed and Removed from OutQueue");
+					System.out.println(
+							"Distance Between String(" + s + ") and String(" + t + ") = " + outQItem.getResult());
 				}
 			}
-			// Remove the item in the map by jobNumber
-
 		}
 
 		out.print("<H1>Processing request for Job#: " + taskNumber + "</H1>");
@@ -143,10 +161,6 @@ public class ServiceHandler extends HttpServlet {
 		// You can use this method to implement the functionality of an RMI
 		// client
 
-	}
-
-	public Requestor findJob(LinkedList<Requestor> inQ) {
-		return inQ.poll();
 	}
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
