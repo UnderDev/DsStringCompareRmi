@@ -4,7 +4,12 @@ import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.Map;
 
-/* Client side class (Used for Threading)
+/**
+* ServiceHandlerWorker Class, Implements Runnable and is in charge of creating a new Threads,
+* Class also sends RMI calls to StringService.compare()
+* and adds the request to the OutQueue
+* 
+* @author Scott Coyne
 */
 public class ServiceHandlerWorker implements Runnable {
 	private LinkedList<Requestor> inQ;

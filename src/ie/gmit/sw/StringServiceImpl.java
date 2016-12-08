@@ -4,7 +4,12 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 
-/* Server side class
+/**
+* StringServiceImpl Class, extends UnicastRemoteObject and implements StringService,
+* Creates a Map containing a new instance of the Algorithms,
+* and also sends threaded requests to StringServiceWorker
+* 
+* @author Scott Coyne
 */
 public class StringServiceImpl extends UnicastRemoteObject implements StringService {
 	private static final long serialVersionUID = 1L;

@@ -1,5 +1,11 @@
 package ie.gmit.sw;
 
+/**
+ * Requestor Class, Is basically a Bean class, used to create an object, that
+ * gets passed into the InQueue
+ * 
+ * @author Scott Coyne
+ */
 public class Requestor {
 	private String algo;
 	private String s;

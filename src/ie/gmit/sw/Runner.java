@@ -3,8 +3,14 @@ package ie.gmit.sw;
 import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 
-//Runnable
-public class Facade {
+/**
+* Runner, Contains Main, and is in-charge of creating the RMI Registry
+*
+* It also implements the interface StringService
+*
+* @author Scott Coyne
+*/
+public class Runner {
 	public static void main(String[] args) throws Exception{		
 		
 		StringService ms = new StringServiceImpl();	

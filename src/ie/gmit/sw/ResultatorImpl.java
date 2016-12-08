@@ -3,7 +3,12 @@ package ie.gmit.sw;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-//RemoteMessageImpl
+/**
+ * ResultatorImpl Class, extends UnicastRemoteObject and implements all the methods
+ * in the interface Resultator.
+ * 
+ * @author Scott Coyne
+ */
 public class ResultatorImpl extends UnicastRemoteObject implements Resultator {
 	private static final long serialVersionUID = 1L;
 	private String s1;

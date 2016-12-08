@@ -1,9 +1,11 @@
 package ie.gmit.sw;
 
-/*
- * Interface - Algorithm, with one method distance(string,string)
- */
-
+/**
+* Algorithm interface, Containing Public methods
+*	-distance(String s, String t);
+*
+* @author Scott Coyne
+*/
 public interface Algorithm {
 	public int distance(String s, String t);
 }

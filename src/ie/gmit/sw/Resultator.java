@@ -3,9 +3,15 @@ package ie.gmit.sw;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-/* Resultator interface
- * Server + Client side class
- */
+/**
+* Resultator interface, Containing Public methods
+*	-String getResult();
+*	-setResult(String result);
+*	-isProcessed();
+*	-setProcessed();
+*
+* @author Scott Coyne
+*/
 public interface Resultator extends Remote {
 	
 	public String getResult() throws RemoteException;

@@ -1,7 +1,10 @@
 package ie.gmit.sw;
 
-/*Server Side Class 
- */
+/**
+* StringServiceWorker Class, Implements Runnable and is in charge of creating a new Thread
+* 
+* @author Scott Coyne
+*/
 public class StringServiceWorker implements Runnable {
 
 	private String s1;
@@ -31,7 +34,7 @@ public class StringServiceWorker implements Runnable {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			//Used to change the boolean of is processed to true
+			//Used to change the boolean in isProcessed to true
 			rs.setProcessed();
 		} catch (Exception e) {
 			e.printStackTrace();

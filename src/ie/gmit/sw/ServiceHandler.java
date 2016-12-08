@@ -9,20 +9,31 @@ import java.util.concurrent.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
+/**
+* ServiceHandler Class, Waits for a doPost() request from a Web Application,
+* The doPost() then calls the doGet() method,
+* Connects to the local Registry and invokes its methods,
+* Adds to an InQueue(Threaded) and deletes from an OutQueue when Tasks are finished,
+* 
+* ServiceHandler Refreshes the page every 10Seconds, until the Task given is Completed.
+* 
+* @author Scott Coyne
+*/
 public class ServiceHandler extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
 	private String remoteHost = null;
 	private volatile static long jobNumber = 0;
-	private LinkedList<Requestor> inQueue;
-	private Map<String, Resultator> outQueue;
-	private volatile static ExecutorService executor;
-	private String distance = "";
+	private volatile LinkedList<Requestor> inQueue;
+	private volatile Map<String, Resultator> outQueue;
+	private volatile ExecutorService executor;
+	
+	private volatile String distance = "";
 	private final int THREAD_POOL_SIZE = 3;
-	private boolean checkProcessed = false;
+	private volatile boolean checkProcessed = false;
 
-	//Init method to initialize everything on startup 
+	//Init Method to Initialize everything on startup 
 	public void init() throws ServletException {
 		ServletContext ctx = getServletContext();
 		remoteHost = ctx.getInitParameter("RMI_SERVER");
@@ -33,6 +44,7 @@ public class ServiceHandler extends HttpServlet {
 		executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 	}
 
+	
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/html");
 		PrintWriter out = resp.getWriter();
@@ -60,11 +72,11 @@ public class ServiceHandler extends HttpServlet {
 		out.print("</head>");
 		out.print("<body>");
 
-		// Check to see if its a new Task
+		// Check to see if its a new Task (New Web App Submission)
 		if (taskNumber == null) {
 			taskNumber = new String("T" + jobNumber);
 
-			//reset new checkProcessed to false
+			//Reset checkProcessed to false
 			checkProcessed = false;
 
 			// Create a new Request OBJECT
@@ -86,7 +98,7 @@ public class ServiceHandler extends HttpServlet {
 
 			// Get the Value associated with the current job number
 			if (outQueue.containsKey(taskNumber)) {
-				// Get the Resultator item from the MAP by current taskNumber
+				// Get the Resultator item from the MAP by Current taskNumber
 				Resultator outQItem = outQueue.get(taskNumber);
 
 				System.out.println("\nChecking Status of Task No:" + taskNumber);
@@ -97,6 +109,7 @@ public class ServiceHandler extends HttpServlet {
 				if (checkProcessed == true) {
 					// Remove the processed item from Map by taskNumber
 					outQueue.remove(taskNumber);
+					//Get the Distance of the Current Task
 					distance = outQItem.getResult();
 
 					System.out.println("\nTask " + taskNumber + " Successfully Processed and Removed from OutQueue");
@@ -114,6 +127,7 @@ public class ServiceHandler extends HttpServlet {
 		out.print("<br>String <i>s</i> : " + s);
 		out.print("<br>String <i>t</i> : " + t);
 
+		//If the task is complete, Show the Distance, otherwise refresh page and display checking 
 		if (checkProcessed == true)
 			out.print("<br><br>Distance: " + distance + "<br>");
 		else {
@@ -133,7 +147,7 @@ public class ServiceHandler extends HttpServlet {
 		out.print("var wait=setTimeout(\"document.frmRequestDetails.submit();\", 10000);");
 		out.print("</script>");
 		
-		// Shut down the Executor (not used) Maby on finalize ?
+		// Shut down the Executor (not used) Maby on finalize?
 		// executor.shutdown();
 	}
 
