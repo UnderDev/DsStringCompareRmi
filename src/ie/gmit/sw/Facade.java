@@ -11,10 +11,10 @@ public class Facade {
 		//Start the RMI registry on port 1099
 		LocateRegistry.createRegistry(1099);
 		
-		//Bind our remote object to the registry with the human-readable name "howdayService"
-		Naming.rebind("howdayService", ms);
+		//Bind our remote object to the registry with the human-readable name "StringMessageService"
+		Naming.rebind("StringMessageService", ms);
 		
 		//Print a nice message to standard output
-		System.out.println("Server ready.");
+		System.out.println("Server Ready to Rock!.");
 	}
 }

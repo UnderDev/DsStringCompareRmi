@@ -18,14 +18,16 @@ public class ServiceHandler extends HttpServlet {
 	private LinkedList<Requestor> inQueue;
 	private Map<String, Resultator> outQueue;
 	private volatile static ExecutorService executor;
-	private String distance;
+	private String distance = "";
 	private final int THREAD_POOL_SIZE = 3;
+	private boolean checkProcessed = false;
 
+	//Init method to initialize everything on startup 
 	public void init() throws ServletException {
 		ServletContext ctx = getServletContext();
 		remoteHost = ctx.getInitParameter("RMI_SERVER");
 		// Reads the value from the <context-param> in web.xml
-
+		
 		inQueue = new LinkedList<Requestor>();
 		outQueue = new HashMap<String, Resultator>();
 		executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
@@ -35,7 +37,7 @@ public class ServiceHandler extends HttpServlet {
 		resp.setContentType("text/html");
 		PrintWriter out = resp.getWriter();
 
-		// Initialize some request variables with the submitted form info. 
+		// Initialize some request variables with the submitted form info.
 		// These are local to this method and thread safe...
 		String algorithm = req.getParameter("cmbAlgorithm");
 		String s = req.getParameter("txtS");
@@ -44,11 +46,12 @@ public class ServiceHandler extends HttpServlet {
 
 		StringService ss = null;
 		try {
-			ss = (StringService) Naming.lookup("rmi://localhost:1099/howdayService");
-			// Make the remote method invocation. This results in the
-			// RemoteMessage object being transferred
-			// to us over the network in serialized form.
-
+			ss = (StringService) Naming.lookup("rmi://localhost:1099/StringMessageService");
+			/*
+			 * Make the remote method invocation. This results in the
+			 * RemoteMessage object being transferred to us over the network in
+			 * serialized form.
+			 */
 		} catch (NotBoundException e1) {
 			e1.printStackTrace();
 		}
@@ -60,6 +63,9 @@ public class ServiceHandler extends HttpServlet {
 		// Check to see if its a new Task
 		if (taskNumber == null) {
 			taskNumber = new String("T" + jobNumber);
+
+			//reset new checkProcessed to false
+			checkProcessed = false;
 
 			// Create a new Request OBJECT
 			Requestor request = new Requestor(s, t, algorithm, taskNumber);
@@ -73,32 +79,28 @@ public class ServiceHandler extends HttpServlet {
 			// Execute the Worker(fixed_pool_size)
 			executor.execute(worker);
 
-			// Shut down the Executor (not used) maby on finalize ? 
-			// executor.shutdown();
-			
-			//Increment jobNumber
+			// Increment jobNumber
 			jobNumber++;
 		} else {
 			// ELSE - Check outQueue for finished job
 
 			// Get the Value associated with the current job number
 			if (outQueue.containsKey(taskNumber)) {
-				//Get the Resultator item from the MAP by current taskNumber
+				// Get the Resultator item from the MAP by current taskNumber
 				Resultator outQItem = outQueue.get(taskNumber);
 
-				System.out.println("Checking Status of Task No:" + taskNumber);
+				System.out.println("\nChecking Status of Task No:" + taskNumber);
+
+				checkProcessed = outQItem.isProcessed();
 
 				// Check to see if the Resultator Item is Processed
-				if (outQItem.isProcessed() == true) {
+				if (checkProcessed == true) {
 					// Remove the processed item from Map by taskNumber
 					outQueue.remove(taskNumber);
-					/*
-					 * NEXT STEP send completed task back to the client
-					 */
 					distance = outQItem.getResult();
-					
+
 					System.out.println("\nTask " + taskNumber + " Successfully Processed and Removed from OutQueue");
-					System.out.println("Distance Between String(" + s + ") and String(" + t + ") = " + distance);
+					System.out.println("Distance Between String (" + s + ") and String (" + t + ") = " + distance);
 				}
 			}
 		}
@@ -112,33 +114,13 @@ public class ServiceHandler extends HttpServlet {
 		out.print("<br>String <i>s</i> : " + s);
 		out.print("<br>String <i>t</i> : " + t);
 
-		out.print("<br>Distance Between String (" + s + ") and String (" + t + ") = " + distance + "<br>");
+		if (checkProcessed == true)
+			out.print("<br><br>Distance: " + distance + "<br>");
+		else {
+			out.print("<form name=\"frmRequestDetails\">");// RefreshPage
+			out.print("<br><br>Checking Distance, Please Wait..<br>");
+		}
 
-		out.print(
-				"<br>This servlet should only be responsible for handling client request and returning responses. Everything else should be handled by different objects.");
-		out.print(
-				"Note that any variables declared inside this doGet() method are thread safe. Anything defined at a class level is shared between HTTP requests.");
-		out.print("</b></font>");
-
-		out.print("<P> Next Steps:");
-		out.print("<OL>");
-		out.print(
-				"<LI>Generate a big random number to use a a job number, or just increment a static long variable declared at a class level, e.g. jobNumber.");
-		out.print("<LI>Create some type of an object from the request variables and jobNumber.");
-		out.print("<LI>Add the message request object to a LinkedList or BlockingQueue (the IN-queue)");
-		// out.print("<LI>Return the jobNumber to the client web browser with a
-		// wait interval using <meta http-equiv=\"refresh\" content=\"10\">. The
-		// content=\"10\" will wait for 10s.");
-		out.print("<LI>Have some process check the LinkedList or BlockingQueue for message requests.");
-		out.print(
-				"<LI>Poll a message request from the front of the queue and make an RMI call to the String Comparison Service.");
-		out.print(
-				"<LI>Get the <i>Resultator</i> (a stub that is returned IMMEDIATELY by the remote method) and add it to a Map (the OUT-queue) using the jobNumber as the key and the <i>Resultator</i> as a value.");
-		out.print(
-				"<LI>Return the result of the string comparison to the client next time a request for the jobNumber is received and the <i>Resultator</i> returns true for the method <i>isComplete().</i>");
-		out.print("</OL>");
-
-		out.print("<form name=\"frmRequestDetails\">");
 		out.print("<input name=\"cmbAlgorithm\" type=\"hidden\" value=\"" + algorithm + "\">");
 		out.print("<input name=\"txtS\" type=\"hidden\" value=\"" + s + "\">");
 		out.print("<input name=\"txtT\" type=\"hidden\" value=\"" + t + "\">");
@@ -150,6 +132,9 @@ public class ServiceHandler extends HttpServlet {
 		out.print("<script>");
 		out.print("var wait=setTimeout(\"document.frmRequestDetails.submit();\", 10000);");
 		out.print("</script>");
+		
+		// Shut down the Executor (not used) Maby on finalize ?
+		// executor.shutdown();
 	}
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

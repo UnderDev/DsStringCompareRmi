@@ -37,7 +37,7 @@ public class ServiceHandlerWorker implements Runnable {
 			//Add the Task num and Resultator to the OutMap
 			outQ.put(request.getTaskNum(), result);
 			
-			//Been lazy with Exceptions
+			//Lazy Exceptions
 		} catch (RemoteException e) {		
 			e.printStackTrace();
 		} catch (Exception e) {
