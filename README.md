@@ -12,6 +12,8 @@ There are 2 parts to this project,
 
 2) Service (string-service.jar)
 
+**Both Files Can be found in the folder SETUP**
+
 
 The Web App:
 Client's using the web app will be able to remotley connect and pass two strings to the service with the choosen algorithm for comparison
