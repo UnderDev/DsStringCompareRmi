@@ -21,7 +21,7 @@ public class StringServiceImpl extends UnicastRemoteObject implements StringServ
 
 	public Resultator compare(String s, String t, String algo) throws RemoteException {
 		fillMap();
-		// Create a new instance of ResultatorImpl()
+		// Create a new instance of ResultatorImpl() - Passed back to client
 		Resultator r = new ResultatorImpl();
 
 		/* Create a new thread with a new instance of StringServiceWorker that
@@ -42,7 +42,7 @@ public class StringServiceImpl extends UnicastRemoteObject implements StringServ
 	private void fillMap(){
 		/*Working*/
 		algoMap.put("Damerau-Levenshtein Distance", new DamerauLevenshtein());
-		algoMap.put("Levenshtein", new Levenshtein());
+		algoMap.put("Levenshtein Distance", new Levenshtein());
 		algoMap.put("Hamming Distance", new HammingDistance());
 		algoMap.put("Needleman-Wunsch", new NeedlemanWunsch());
 		algoMap.put("JaroâWinkler Distance", new JaroWinklerAlgorithm());
@@ -52,10 +52,10 @@ public class StringServiceImpl extends UnicastRemoteObject implements StringServ
 			
 		/*Not implemented DEFAULT Levenshtein Algorithm*/
 		//Working, but not returning Correct answer
-		algoMap.put("Euclidean Distance", new Levenshtein());
+		//algoMap.put("Euclidean Distance", new Levenshtein());
 		
 		//Code not returning distance 	
-		algoMap.put("Hirschberg's Algorithm", new Levenshtein());
+		//algoMap.put("Hirschberg's Algorithm", new Levenshtein());
 	}
 
 }

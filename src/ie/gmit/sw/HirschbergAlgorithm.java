@@ -1,158 +1,175 @@
 package ie.gmit.sw;
 
-/*
+/**
  * Algorithm not working or implemented
- * http://www.mathcs.emory.edu/~cheung/Courses/323/Syllabus/DynProg/Progs/LCS/Hirschberg.java
+ * https://github.com/sodhibhupinder/learn/blob/master/src/learn/Hirschberg.java
  */
 
 public class HirschbergAlgorithm {
-	static int K[][];
-
-	/*
-	 * ==================================================================
-	 * findLCS_String(x, y): find the LCS STRING in string x and y
-	 * ==================================================================
-	 */
-	public static String distance(String x, String y) {
-		int k, i, j;
-		int m, n;
-		String y1, y2;
-		String x1, x2;
-		String C = "";
-
-		m = x.length(); // m = length of x
-		n = y.length(); // n = length of y
-
-		/*
-		 * ===================================================== Base case 1: ""
-		 * =====================================================
-		 */
-		if (m == 0) {
-			return ""; // LCS = ""
-		}
-
-		/*
-		 * ===================================================== Base case 2: x
-		 * = "?" =====================================================
-		 */
-		if (m == 1) {
-			/*
-			 * ===================================== The input x consists of 1
-			 * character Find the single common character in y
-			 * =====================================
-			 */
-			for (i = 0; i < n; i++)
-				if (y.charAt(i) == x.charAt(0))
-					return (x); // Found: LCS = x
-
-			return ""; // Not found: LCS = ""
-		}
-
-		/*
-		 * ===================================================== General case: x
-		 * has 2 or more characters
-		 * =====================================================
-		 */
-		int c = solveLCS(x, y); // This is the sum of the correct split
-		int c1 = 0, c2 = 0;
-
-		/*
-		 * System.out.println("LCS( " + x + "," + y + ") = " + c );
-		 */
-
-		x1 = x.substring(0, m / 2); // First half of x
-		x2 = x.substring(m / 2, m); // Second half of x
-
-		/*
-		 * -------------------------------------------------- Find a correct
-		 * split of y --------------------------------------------------
-		 */
-		for (k = 0; k < n; k++) {
-
-			c1 = solveLCS(x1, y.substring(0, k)); // LCS of first half
-			c2 = solveLCS(x2, y.substring(k, n)); // LCS of second half
-			/*
-			 * System.out.println("Trying: "); System.out.println(" " + x1 +
-			 * "<->" + y.substring(0, k) + " ==> " + c1); System.out.println(" "
-			 * + x2 + "<->" + y.substring(j, k) + " ==> " + c2);
-			 */
-			if (c1 + c2 == c)
-				break; // Found a correct split of y !!!
-		}
-		/*
-		 * if ( c1 + c2 != c ) {
-		 * System.out.println("x1 + x2 == z NOT FOUND ???"); }
-		 */
-		/*
-		 * -------------------------------------------------- Here: k = a
-		 * correct split of y ....
-		 * 
-		 * Solve smaller problems
-		 * --------------------------------------------------
-		 */
-
-		y1 = y.substring(0, k);
-		y2 = y.substring(k, n);
-
-		String sol1 = distance(x1, y1);
-		String sol2 = distance(x2, y2);
-
-		/*
-		 * ------------------------------------------------------------ Use
-		 * solution of smaller problems to solve original problem
-		 * ------------------------------------------------------------
-		 */
-		return (sol1 + sol2);
-	}
-
-	/*
-	 * ==============================================================
-	 * solveLCS(x,y): find the number of characters in the Longest Common
-	 * Substring of x and y
+	/**
+	 * Generic constructor
 	 * 
-	 * This is the linear space algorithm to find length of LCS Except: I ADDED
-	 * a statement to return K[1][n] at the end
-	 * ==============================================================
 	 */
-	public static int solveLCS(String x, String y) {
-		int i, j;
-
-		if (x.length() == 0 || y.length() == 0)
-			return 0;
-
-		for (j = 0; j < y.length() + 1; j++)
-			K[1][j] = 0; // x = "" ===> LCS = 0
-
-		for (i = 1; i < x.length() + 1; i++) {
-			/*
-			 * ===================================================== Recycle
-			 * phase: copy row K[1][...] to row K[0][...]
-			 * =====================================================
-			 */
-			for (j = 0; j < y.length() + 1; j++)
-				K[0][j] = K[1][j];
-
-			K[1][0] = 0; // y = "" ===> LCS = 0
-
-			for (j = 1; j < y.length() + 1; j++) {
-				if (x.charAt(i - 1) == y.charAt(j - 1)) {
-					K[1][j] = K[0][j - 1] + 1;
-				} else {
-					K[1][j] = Math.max(K[0][j], K[1][j - 1]);
+	public HirschbergAlgorithm() {
+		
+	}
+	
+	/**
+	 * Algorithm B as described by Hirschberg.	 * returns the last line of the Needleman-Wunsch score matrix Score(i,j):
+	 * 
+	 * @param m
+	 * @param n
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public int[] algB(int m, int n, String a, String b) {
+		
+		// Step 1
+		int[][] k = new int[2][n+1];
+		for( int j=0; j<=n; j++) {
+			k[1][j] = 0;
+		}
+		
+		// Step 2
+		for(int i=1; i<=m; i++) {
+			// Step 3
+			for(int j=0; j<=n; j++) {
+				k[0][j] = k[1][j];
+			}
+			
+			// Step 4
+			for(int j=1; j<=n; j++) {
+				if(a.charAt(i-1) == b.charAt(j-1)) {
+					k[1][j] = k[0][j-1] + 1;
+				}else{
+					k[1][j] = max(k[1][j-1], k[0][j]);
 				}
 			}
 		}
-
-		return K[1][y.length()]; // ***** I added this
+		
+		//Step 5
+		return k[1];
+		
 	}
-
+	
+	/**
+	 * This method returns the maximum number between two numbers.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public int max(int x, int y) {
+		if(x>y) {
+			return x;
+		}else{
+			return y;
+		}
+	}
+	
+	/**
+	 * Algorithm C as described by Hirschberg
+	 * 
+	 * @param m
+	 * @param n
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public String algC(int m, int n, String a, String b) {
+		int i=0;
+		int j=0;
+		String c = "";
+		
+		// Step 1
+		if( n==0 ) {
+			c = "";
+		} else if( m==1 ) {
+			c = "";
+			for( j=0; j<n; j++ ) {
+				if( a.charAt(0)==b.charAt(j) ) {
+					c= ""+a.charAt(0);
+					break;
+				}
+			}
+			
+		// Step 2
+		} else {
+			i= (int) Math.floor(((double)m)/2);
+			
+			// Step 3
+			int[] l1 = algB(i, n, a.substring(0,i), b);
+			int[] l2 = algB(m-i, n, reverseString(a.substring(i)), reverseString(b));
+			
+			// Step 4
+			int k = findK(l1, l2, n);
+			
+			// Step 5
+			String c1 = algC(i, k, a.substring(0, i), b.substring(0, k));
+			String c2 = algC(m-i, n-k, a.substring(i), b.substring(k));
+			
+			c = c1+c2;
+		}
+		
+		return c; // The LCS
+	}
+	
+	
+	/**
+	 * This method takes a string as input reverses it and 
+	 * returns the result
+	 * 
+	 * @param in
+	 * @return
+	 */
+	public String reverseString(String in) {
+		String out = "";
+		
+		for(int i=in.length()-1; i>=0; i--) {
+			out = out+in.charAt(i);
+		}
+		
+		return out;
+	}
+	
+	
+	/**
+	 * This method finds the index of the maximum sum of L1 and L2, 
+	 * as described by Hirschberg
+	 * 
+	 * @param l1
+	 * @param l2
+	 * @param n
+	 * @return
+	 */
+	public int findK(int[] l1, int[] l2, int n) {
+		int m = 0;
+		int k = 0;
+		
+		for(int j=0; j<=n; j++) {	
+			if(m < (l1[j]+l2[n-j])) {
+				m = l1[j]+l2[n-j];
+				k = j;
+			}
+		}
+		
+		return k;
+	}
+	
+	
+	/**
+	 * The main method for the algorithm
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
-		String s1 = "testing algorithm";
-		String s2 = "tst algorithm";
-		K = new int[2][s1.length() + 1]; // Linear space !!!
 
-
-		System.out.println(distance(s1, s2));
+			String x = "stuhgfhff";
+			String y = "thifghfngs";
+			HirschbergAlgorithm alg = new HirschbergAlgorithm();
+			
+			System.out.println("LCS: " + alg.algB(x.length(), y.length(), x, y)); //Computes & prints out the result
 	}
 
 }
