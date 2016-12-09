@@ -1,8 +1,8 @@
 #An Asynchronous RMI String Comparison Service. 
----
+
 
 ##Introduction
----
+
 
 The following application use's the Java RMI framework to develop a remote, asynchronous string comparison service. 
 
@@ -29,7 +29,7 @@ The service can then use that string comparison algorithms to compute the edit d
 
 
 #Running the Program
----
+
 
 1) Service
 - Run the "string-service.jar" via CMD with the following comand: java –cp ./string-service.jar ie.gmit.sw.Servant
@@ -44,7 +44,7 @@ Once both have been started, open op a Web Browser and paste in the Url: http://
 Boom! You now have An Asynchronous RMI String Comparison Service.
 
 #Algorithms Implemented.
----
+
  
 - Hamming Distance (1950)
 - Levenshtein Distance (1965)
