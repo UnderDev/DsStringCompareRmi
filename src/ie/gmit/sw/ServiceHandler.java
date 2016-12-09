@@ -150,6 +150,14 @@ public class ServiceHandler extends HttpServlet {
 		// Shut down the Executor (not used) Maby on finalize?
 		// executor.shutdown();
 	}
+	
+
+	protected void finalize() throws Throwable {
+		// Shut down the Executor
+		executor.shutdown();
+		super.finalize();
+	}
+
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		doGet(req, resp);
