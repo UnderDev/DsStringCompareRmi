@@ -10,7 +10,7 @@ import java.rmi.registry.LocateRegistry;
 *
 * @author Scott Coyne
 */
-public class Runner {
+public class Servant {
 	public static void main(String[] args) throws Exception{		
 		
 		StringService ms = new StringServiceImpl();	
