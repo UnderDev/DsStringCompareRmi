@@ -22,7 +22,6 @@ The service can then use that string comparison algorithms to compute the edit d
 
 
 #Features Added:
----
 
 - Web App/Service is fully threaded.
 - When client recives results, web app no longer refreshes.
